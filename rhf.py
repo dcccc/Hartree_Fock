@@ -267,57 +267,9 @@ def all_energy(p_mat,F_mat,nu):
 			e_e+=p_mat[k,l]*F_mat[k,l]
 	return(v_nn+e_e/2)
 
-#########  sto-3g
-######### a [ 0.1688554040, 0.6239137298, 3.4252509140 ]
-
-# j=0.370065/0.5291772
-
-# jj=-0.370065/0.5291772
 
 
-ba=[[0,0,j,0,0,0,i]  for j in [0.370065/0.5291772,-0.370065/0.5291772] for i in [3.4252509140, 0.6239137298,0.1688554040 ]]
-
-# sss=np.zeros((6,6))
-
-# for i in range(6):
-# 	for j in range(6):
-# 		for k in range(6):
-# 			for l in range(6):
-# 				if i>=j and k>=l and i>=k  :
-# 					ij=i*(i+1)/2+j
-# 					sss=g(ba[i],ba[j],ba[k],ba[l])
-# 					sss=sss/(sab(ba[i],ba[i])*sab(ba[j],ba[j])*sab(ba[k],ba[k])*sab(ba[l],ba[l]))**0.5
-# 					print("%d-%d-%d-%d     %6.5f"  %(i+1,j+1,k+1,l+1,sss))
-
-# i=6-1
-# j=6-1
-# k=6-1
-# l=1-1
-
-# print(ba[i])
-# print(ba[l])
-
-# sss=g(ba[i],ba[j],ba[k],ba[l])
-# sss=sss/(sab(ba[i],ba[i])*sab(ba[j],ba[j])*sab(ba[k],ba[k])*sab(ba[l],ba[l]))**0.5
-
-# print(sss)
-
-
-# ijkl=[[6,1,4,2],[6,1,5,2],[6,1,5,4],[6,2,4,1],[6,2,4,3],[6,2,5,1],[6,2,5,4],[6,3,5,1],[6,3,5,4],\
-# [6,4,2,1],[6,4,4,3],[6,4,4,4],[6,4,5,1],[6,4,5,2],[6,4,5,3],[6,4,5,4],[6,4,5,5],[6,4,6,1],\
-# [6,4,6,2],[6,4,6,3],[6,4,6,4],[6,5,1,1],[6,5,2,1],[6,5,2,2],[6,5,3,1],[6,5,4,1],[6,5,4,2],\
-# [6,5,4,3],[6,5,4,4],[6,5,5,1],[6,5,5,2],[6,5,5,3],[6,5,5,4],[6,5,5,5],[6,5,6,1],[6,5,6,2],\
-# [6,5,6,3],[6,5,6,4],[6,5,6,5],[6,6,1,1],[6,6,2,1],[6,6,2,2],[6,6,3,1],[6,6,3,2],[6,6,4,1],\
-# [6,6,4,2],[6,6,4,3],[6,6,4,4],[6,6,5,1],[6,6,5,2],[6,6,5,3],[6,6,5,4],[6,6,5,5],[6,6,6,1],\
-# [6,6,6,2],[6,6,6,3],[6,6,6,4],[6,6,6,5],[6,6,6,6]]
-
-# for ii in ijkl:
-# 	i,j,k,l=tuple(ii)
-# 	sss=g(ba[i-1],ba[j-1],ba[k-1],ba[l-1])
-# 	sss=sss/(sab(ba[i-1],ba[i-1])*sab(ba[j-1],ba[j-1])*sab(ba[k-1],ba[k-1])*sab(ba[l-1],ba[l-1]))**0.5
-# 	print("%d-%d-%d-%d     %10.9f"  %(i,j,k,l,sss))
-
-
+#输入参数
 
 ba=[[0,0,j,0,0,0,i]  for j in [0.370065/0.5291772,-0.370065/0.5291772] for i in [3.4252509140, 0.6239137298,0.1688554040 ]]
 
@@ -327,18 +279,19 @@ delta_p=1.0
 n_electron=2
 n_c=0
 
-
+#重叠矩阵
 s_mat=np.zeros((6,6))
 for i in range(6):
 	for j in range(6):
 		s_mat[i,j]=sab(ba[i],ba[j])/(sab(ba[i],ba[i])*sab(ba[j],ba[j]))**0.5
 
-
+#动能矩阵
 t_mat=np.zeros((6,6))
 for i in range(6):
 	for j in range(6):
 		t_mat[i,j]=tab(ba[i],ba[j])/(sab(ba[i],ba[i])*sab(ba[j],ba[j]))**0.5
 
+#势能矩阵
 v_mat=np.zeros((6,6))
 for i in range(6):
 	for j in range(6):
@@ -346,6 +299,9 @@ for i in range(6):
 		temp=vab(ba[i],ba[j],nu[0])+vab(ba[i],ba[j],nu[1])
 		v_mat[i,j]=temp/(sab(ba[i],ba[i])*sab(ba[j],ba[j]))**0.5
 
+
+
+#双电子积分
 gabcd_mat={}
 
 for i in range(6):
@@ -362,57 +318,34 @@ for i in range(6):
 
 
 
+#S^-0.5的获取
 d_mat,l_mat=np.linalg.eig(s_mat)
 d_mat=np.diag(tuple(d_mat**-0.5))
-
-
-
 s_mat_05=np.dot(np.dot(l_mat,d_mat),l_mat.T)
 
+
+
 F_mat=t_mat+v_mat
-
 F_mat_1=np.dot(np.dot(s_mat_05,F_mat),s_mat_05.T)
+
+#FOCK的对角化
 e_mat,C_mat=np.linalg.eig(F_mat_1)
+
+#参数矩阵的排序归一化
 e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat)
 
-
-
-
+#密度矩阵
 p_mat=pab(C_mat,n_electron)
 
 
-G_mat=np.zeros((6,6))
-for i in range(6):
-	for j in range(6):
-		G_mat[i,j]=g_ab(p_mat,gabcd_mat,i,j)
-
-F_mat=t_mat+v_mat+G_mat
-F_mat_1=np.dot(np.dot(s_mat_05,F_mat),s_mat_05.T)
-e_mat,C_mat=np.linalg.eig(F_mat_1)
-e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat)
-p_mat=pab(C_mat,n_electron)
-ene= all_energy(p_mat,F_mat+t_mat+v_mat+G_mat,np.array(nu))
+ene=0.0
 
 
-
-# def scf(t_mat,v_mat,s_mat,gabcd_mat,C_mat,s_mat_05,n_electron)
-
-# 	p_mat=pab(C_mat,n_electron)
-# 	G_mat=np.zeros((6,6))
-# 	for i in range(6):
-# 		for j in range(6):
-# 			G_mat[i,j]=g_ab(p_mat,gabcd_mat,n_electron,i,j)
-
-# 	F_mat=t_mat+v_mat+G_mat
-# 	F_mat_1=np.dot(np.dot(s_mat_05,F_mat),s_mat_05.T)
-# 	e_mat,C_mat=np.linalg.eig(F_mat_1)
-# 	ene= all_energy(p_mat,F_mat,np.array(nu))
-
-
+#SCF迭代
 while(delta_e>1*10**-8 or delta_p>1*10**-6):
 
 
-	
+	#G矩阵
 	G_mat=np.zeros((6,6))
 	for i in range(6):
 		for j in range(6):
@@ -423,17 +356,24 @@ while(delta_e>1*10**-8 or delta_p>1*10**-6):
 	e_mat,C_mat=np.linalg.eig(F_mat_1)
 	e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat)
 	p_mat1=pab(C_mat,n_electron)
+
+	#获得体系能量
 	ene1= all_energy(p_mat,F_mat+t_mat+v_mat,np.array(nu))
 
+	#能量差
 	delta_e=abs(ene1-ene)
+
+	#密度矩阵差
 	delta_p=0.0
 	for i in range(6):
 		for j in range(6):
 			delta_p+=abs(p_mat1[i,j]-p_mat[i,j])/36
+
 	ene=ene1
 	p_mat=p_mat1[:,:]
 	n_c=n_c+1
-	# print(n_c)
 
-	print("%-4d     %10.8f     %10.8f     %10.8f      %10.8f"  %(n_c, ene, e_mat[0],delta_e, delta_p))
+
+	#输出能量，能量的变化，以及密度矩阵的变化
+	print("%-4d     %10.8f     %10.8f      %10.8f"  %(n_c, ene, delta_e, delta_p))
 
