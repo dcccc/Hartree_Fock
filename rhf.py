@@ -1,7 +1,7 @@
 #coding=utf-8
 import math
 import numpy as np
-
+import scipy.special as spec
 
 def s_ab(x1,i1,a1,x2,i2,a2):
 	p=a1+a2
@@ -16,12 +16,11 @@ def s_ab(x1,i1,a1,x2,i2,a2):
 		s=0.0
 	elif i1==0 and i2==0 :
 		s=(math.pi/p)**0.5*kab
-	elif i1>i2:
-		s=xa*s_ab(x1,i1-1,a1,x2,i2,a2)+1.0/2.0/p*(i1*s_ab(x1,i1-2,a1,x2,i2,a2)+
-			i2*s_ab(x1,i1-1,a1,x2,i2-1,a2))
+	elif i1>0 and i2==0:
+		s=xa*s_ab(x1,i1-1,a1,x2,i2,a2)+0.5/p*((i1-1)*s_ab(x1,i1-2,a1,x2,i2,a2))
 	else:
-		s=xa*s_ab(x1,i1,a1,x2,i2-1,a2)+1.0/2.0/p*(i1*s_ab(x1,i1-1,a1,x2,i2-1,a2)+
-			i2*s_ab(x1,i1,a1,x2,i2-2,a2))
+		s=xb*s_ab(x1,i1,a1,x2,i2-1,a2)+0.5/p*(i1*s_ab(x1,i1-1,a1,x2,i2-1,a2)+
+			(i2-1)*s_ab(x1,i1,a1,x2,i2-2,a2))
 
 	return(s)
 
@@ -44,14 +43,14 @@ def t_ab(x1,i1,a1,x2,i2,a2):
 	if i1<0 or i2<0:
 		t=0.0
 	elif i1==0 and i2==0:
-		t=(a1-2*a1**2*(xa**2+1.0/2.0/p))*s_ab(x1,0,a1,x2,0,a2)
-	elif i1>=i2:
-		t=xa*t_ab(x1,i1-1,a1,x2,i2,a2)+\
-		0.5/p*((i1-1)*t_ab(x1,i1-2,a1,x2,i2,a2)+i2*t_ab(x1,i1-1,a1,x2,i2-1,a2))+\
-		a2/p*(2.0*a1*s_ab(x1,i1,a1,x2,i2,a2)-i1*s_ab(x1,i1-2,a1,x2,i2,a2))
+		t=(a1-2*a1**2*(xa**2+0.5/p))*s_ab(x1,0,a1,x2,0,a2)
+	elif i1>0 and i2==0:
+		t=xa*t_ab(x1,i1-1,a1,x2,0,a2)+\
+		0.5/p*((i1-1)*t_ab(x1,i1-2,a1,x2,0,a2))+\
+		a2/p*(2.0*a1*s_ab(x1,i1,a1,x2,0,a2)-(i1-1)*s_ab(x1,i1-2,a1,x2,0,a2))
 	else:
 		t=xb*t_ab(x1,i1,a1,x2,i2-1,a2)+\
-		0.5/p*(i1*t_ab(x1,i1-1,a1,x2,i2-1,a2)+i2*t_ab(x1,i1,a1,x2,i2-2,a2))+\
+		0.5/p*(i1*t_ab(x1,i1-1,a1,x2,i2-1,a2)+(i2-1)*t_ab(x1,i1,a1,x2,i2-2,a2))+\
 		a1/p*(2.0*a2*s_ab(x1,i1,a1,x2,i2,a2)-(i2-1)*s_ab(x1,i1,a1,x2,i2-2,a2))
 
 	return(t)
@@ -69,12 +68,12 @@ def tab(ga,gb):
 def hermite(x1,i1,a1,x2,i2,a2,t):
 	p=a1+a2
 
-	if t<0:
+	if t<0 or t > i1+i2 or i1<0 or i2<0:
 		e=0.0
 	elif t==0:
 		e=(p/math.pi)**0.5*s_ab(x1,i1,a1,x2,i2,a2)
 	else:
-		e=(i1*hermite(x1-1,i1,a1,x2,i2,a2,t-1)+i2*hermite(x1,i1,a1,x2,i2-1,a2,t-1))/2.0/p/t
+		e=(i1*hermite(x1,i1-1,a1,x2,i2,a2,t-1)+i2*hermite(x1,i1,a1,x2,i2-1,a2,t-1))/2.0/p/t
 	return(e)
 
 
@@ -90,16 +89,16 @@ def boys(n,x):
 		boy=0.0
 		for k in range(7):
 			boy+=(-x)**k/(math.factorial(k)*(2.0*k+2.0*n+1))
-	elif x<=19.35 and x > 0.18:
-		boy=0.0
-		for i in range(12):
-			factorial=1
-			for j in range(i):
-				factorial*=(2*n+2*j+1)
-			boy+=math.exp(-x)*(2*x)**i/factorial
+	# elif x<=19.35 and x > 0.18:
+	# 	boy=0.0
+	# 	for i in range(12):
+	# 		factorial=1
+	# 		for j in range(i):
+	# 			factorial*=(2*n+2*j+1)
+	# 			boy+=math.exp(-x)*(2*x)**i/factorial
 
-	elif x>19.35:
-		boy=math.factorial(math.factorial(2*n))/2**(n+1)*(math.pi/2**(2*n+1))**0.5
+	else:
+		boy=0.5/x**(n+0.5)*spec.gamma(n+0.5)*spec.gammainc(n+0.5,x)
 	# elif x>=35 and n == 0:
 	# 	boy=0.5*(math.pi/x)**0.2
 	# elif x
@@ -120,17 +119,19 @@ def ruvt(u,v,t,ga,gb,n,nu):
 	xa=px-nu[0]
 	ya=py-nu[1]
 	za=pz-nu[2]
+
 	rpc2=xa**2+ya**2+za**2
 
 	if u<0 or v<0 or t<0 or n<0:
 		r=0.0
-	elif u==0 or v==0 or t==0 :
+	elif u==0 and v==0 and t==0 :
 		r=(-2*p)**n*boys(n,p*rpc2)
-	elif u>0:
-		r=(u-1)*ruvt(u-2,v,t,ga,gb,n+1,nu)+xa*ruvt(u-1,v,t,ga,gb,n+1,nu)
-	elif v>0:
-		r=(v-1)*ruvt(u,v-2,t,ga,gb,n+1,nu)+ya*ruvt(u,v-1,t,ga,gb,n+1,nu)
-	elif t>0:
+		# print(r,n,p,rpc2)
+	elif u>0 and v==0 and t==0:
+		r=(u-1)*ruvt(u-2,0,0,ga,gb,n+1,nu)+xa*ruvt(u-1,0,0,ga,gb,n+1,nu)
+	elif v>0 and t==0:
+		r=(v-1)*ruvt(u,v-2,0,ga,gb,n+1,nu)+ya*ruvt(u,v-1,0,ga,gb,n+1,nu)
+	else:
 		r=(t-1)*ruvt(u,v,t-2,ga,gb,n+1,nu)+za*ruvt(u,v,t-1,ga,gb,n+1,nu)
 
 	return(r)
@@ -171,12 +172,12 @@ def ruvt_2(u,v,t,ga,gb,gc,gd,n):
 	elif u==0 and v==0 and t==0 :
 		r=(-2*pp)**n*boys(n,pp*rpc2)
 
-	elif u>0:
-		r=(u-1)*ruvt(u-2,v,t,ga,gb,gc,gd,n+1,nu)+px*ruvt(u-1,v,t,ga,gb,gc,gd,n+1,nu)
+	elif u>0 :
+		r=(u-1)*ruvt_2(u-2,v,t,ga,gb,gc,gd,n+1)+px*ruvt_2(u-1,v,t,ga,gb,gc,gd,n+1)
 	elif v>0:
-		r=(v-1)*ruvt(u,v-2,t,ga,gb,gc,gd,n+1,nu)+py*ruvt(u,v-1,t,ga,gb,gc,gd,n+1,nu)
+		r=(v-1)*ruvt_2(u,v-2,t,ga,gb,gc,gd,n+1)+py*ruvt_2(u,v-1,t,ga,gb,gc,gd,n+1)
 	elif t>0:
-		r=(t-1)*ruvt(u,v,t-2,ga,gb,gc,gd,n+1,nu)+pz*ruvt(u,v,t-1,ga,gb,gc,gd,n+1,nu)
+		r=(t-1)*ruvt_2(u,v,t-2,ga,gb,gc,gd,n+1)+pz*ruvt_2(u,v,t-1,ga,gb,gc,gd,n+1)
 
 	return(r)
 
@@ -233,37 +234,37 @@ def pab(C_mat,n_electron):
 	return(p_mat)
 
 
-def g_ab(p_mat,gabcd_mat,i,j):
+def g_ab(p_mat,gabcd_mat,i,j,basis_num):
 	gv=0.0
-	for k in range(6):
-		for l in range(6):
+	for k in range(basis_num):
+		for l in range(basis_num):
 			gv+=p_mat[k,l]*(gabcd_mat[gabdc_index(i,j,k,l)]-gabcd_mat[gabdc_index(i,l,k,j)]/2)
 	return(gv)
 
 
 
-def c_normarize(c_mat,e_mat,s_mat):
+def c_normarize(c_mat,e_mat,s_mat,basis_num):
 
 	ce_mat=np.vstack((e_mat,c_mat)).T.tolist()
 	ce_mat=np.array(sorted(ce_mat,key=lambda x: x[0]))
 	e_mat,c_mat=ce_mat.T[0,:],ce_mat.T[1:,:]
-	for i in range(6):
+	for i in range(basis_num):
 		N=0.0
-		for j in range(6):
-			for k in range(6):
+		for j in range(basis_num):
+			for k in range(basis_num):
 				N+=c_mat[j,i]*c_mat[k,i]*s_mat[j,k]
 		c_mat[:,i]=c_mat[:,i]/N**0.5
 	return(e_mat,c_mat)
 
-def all_energy(p_mat,F_mat,nu):
+def all_energy(p_mat,F_mat,nu,basis_num):
 	v_nn=0.0
 	e_e=0.0
 	for i in range(len(nu)):
 		for j in range(len(nu)):
 			if i>j:
 				v_nn+=nu[i,3]*nu[j,3]/np.sum((nu[i,:3]-nu[j,:3])**2)**0.5
-	for k in range(6):
-		for l in range(6):
+	for k in range(basis_num):
+		for l in range(basis_num):
 			e_e+=p_mat[k,l]*F_mat[k,l]
 	return(v_nn+e_e/2)
 
@@ -271,43 +272,91 @@ def all_energy(p_mat,F_mat,nu):
 
 #输入参数
 
-ba=[[0,0,j,0,0,0,i]  for j in [0.370065/0.5291772,-0.370065/0.5291772] for i in [3.4252509140, 0.6239137298,0.1688554040 ]]
 
-nu=[[0,0,j,1]  for j in [0.370065/0.5291772,-0.370065/0.5291772]]
 delta_e=1.0
 delta_p=1.0
-n_electron=2
+n_electron=10
 n_c=0
 
+coor=[["C",  0.         ,  0.          ,   0.           ],\
+      ["H" , 0.         ,  0.          ,   2.0220696   ],\
+      ["H" , 0.         , -1.90636644 ,  -0.67400233  ],\
+      ["H" ,-1.65096177,  0.95318323 ,  -0.67400233  ],\
+      ["H" , 1.65096177,  0.95318323 ,  -0.67400233  ]]
+
+from pp import basis_data_p
+
+nu=[]
+ba=[]
+basis_data=basis_data_p("basis_file.txt")
+
+for i in coor :
+	if i[0]=="C":
+		temp1=[i[1],i[2],i[3],6.0]
+		nu.append(temp1)
+		basis_data_t=basis_data["C"]["S"]
+		for j in range(len(basis_data_t)):
+			temp=[i[1],i[2],i[3],0,0,0,float(basis_data_t[j][0])]
+			ba.append(temp)
+		basis_data_t=basis_data["C"]["SP"]
+		for j in range(len(basis_data_t)):
+			temp=[i[1],i[2],i[3],0,0,0,float(basis_data_t[j][0])]
+			ba.append(temp)
+			for k in [[1,0,0],[0,1,0],[0,0,1]]:
+				temp=[i[1],i[2],i[3],k[0],k[1],k[2],float(basis_data_t[j][0])]
+				ba.append(temp)
+	if i[0]=="H":
+		temp1=[i[1],i[2],i[3],1.0]
+		nu.append(temp1)
+		basis_data_t=basis_data["H"]["S"]
+		for j in range(len(basis_data_t)):
+			temp=[i[1],i[2],i[3],0,0,0,float(basis_data_t[j][0])]
+			ba.append(temp)
+
+basis_num=len(ba)
+
+print(basis_data)
+# print(ruvt(0,2,0,ba[7],ba[7],0,nu[0]))
+# print(vab(ba[7],ba[7],nu[2]))
+# print(ba[7],ba[7],nu[0])
+
+# print(ruvt(0,2,0,ba[7],ba[7],0,nu[2]))
+
+
+# exit()
+
 #重叠矩阵
-s_mat=np.zeros((6,6))
-for i in range(6):
-	for j in range(6):
+s_mat=np.zeros((basis_num,basis_num))
+for i in range(basis_num):
+	for j in range(basis_num):
 		s_mat[i,j]=sab(ba[i],ba[j])/(sab(ba[i],ba[i])*sab(ba[j],ba[j]))**0.5
 
 #动能矩阵
-t_mat=np.zeros((6,6))
-for i in range(6):
-	for j in range(6):
+t_mat=np.zeros((basis_num,basis_num))
+for i in range(basis_num):
+	for j in range(basis_num):
 		t_mat[i,j]=tab(ba[i],ba[j])/(sab(ba[i],ba[i])*sab(ba[j],ba[j]))**0.5
 
 #势能矩阵
-v_mat=np.zeros((6,6))
-for i in range(6):
-	for j in range(6):
+v_mat=np.zeros((basis_num,basis_num))
+for i in range(basis_num):
+	for j in range(basis_num):
 		temp=0.0
-		temp=vab(ba[i],ba[j],nu[0])+vab(ba[i],ba[j],nu[1])
+		for k in nu:
+			temp+=vab(ba[i],ba[j],k)
 		v_mat[i,j]=temp/(sab(ba[i],ba[i])*sab(ba[j],ba[j]))**0.5
+
+
 
 
 
 #双电子积分
 gabcd_mat={}
 
-for i in range(6):
-	for j in range(6):
-		for k in range(6):
-			for l in range(6):
+for i in range(basis_num):
+	for j in range(basis_num):
+		for k in range(basis_num):
+			for l in range(basis_num):
 				if i>=j and k>=l and i>=k  :
 					
 					temp=gabcd(ba[i],ba[j],ba[k],ba[l])
@@ -317,6 +366,10 @@ for i in range(6):
 
 
 
+np.savetxt("s_mat.csv",s_mat,delimiter=',')
+np.savetxt("t_mat.csv",t_mat,delimiter=',')
+np.savetxt("v_mat.csv",v_mat,delimiter=',')
+
 
 #S^-0.5的获取
 d_mat,l_mat=np.linalg.eig(s_mat)
@@ -325,14 +378,15 @@ s_mat_05=np.dot(np.dot(l_mat,d_mat),l_mat.T)
 
 
 
-F_mat=t_mat+v_mat
-F_mat_1=np.dot(np.dot(s_mat_05,F_mat),s_mat_05.T)
+H_mat=t_mat-v_mat
+F_mat_1=np.dot(np.dot(s_mat_05,H_mat),s_mat_05.T)
+
 
 #FOCK的对角化
 e_mat,C_mat=np.linalg.eig(F_mat_1)
 
 #参数矩阵的排序归一化
-e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat)
+e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat,basis_num)
 
 #密度矩阵
 p_mat=pab(C_mat,n_electron)
@@ -346,28 +400,28 @@ while(delta_e>1*10**-8 or delta_p>1*10**-6):
 
 
 	#G矩阵
-	G_mat=np.zeros((6,6))
-	for i in range(6):
-		for j in range(6):
-			G_mat[i,j]=g_ab(p_mat,gabcd_mat,i,j)
+	G_mat=np.zeros((basis_num,basis_num))
+	for i in range(basis_num):
+		for j in range(basis_num):
+			G_mat[i,j]=g_ab(p_mat,gabcd_mat,i,j,basis_num)
 
-	F_mat=t_mat+v_mat+G_mat
+	F_mat=H_mat+G_mat
 	F_mat_1=np.dot(np.dot(s_mat_05,F_mat),s_mat_05.T)
 	e_mat,C_mat=np.linalg.eig(F_mat_1)
-	e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat)
+	e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat,basis_num)
 	p_mat1=pab(C_mat,n_electron)
 
 	#获得体系能量
-	ene1= all_energy(p_mat,F_mat+t_mat+v_mat,np.array(nu))
+	ene1= all_energy(p_mat,F_mat+H_mat,np.array(nu),basis_num)
 
 	#能量差
 	delta_e=abs(ene1-ene)
 
 	#密度矩阵差
 	delta_p=0.0
-	for i in range(6):
-		for j in range(6):
-			delta_p+=abs(p_mat1[i,j]-p_mat[i,j])/36
+	for i in range(basis_num):
+		for j in range(basis_num):
+			delta_p+=abs(p_mat1[i,j]-p_mat[i,j])/basis_num**2
 
 	ene=ene1
 	p_mat=p_mat1[:,:]
