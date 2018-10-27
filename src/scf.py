@@ -189,7 +189,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 		ene=ene1
 
 		# 密度矩阵混合
-		p_mat=p_mat1*0.5+p_mat*0.5
+		p_mat=p_mat1
 		n_c=n_c+1
 	
 	
@@ -225,7 +225,6 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 
 		# 计算mp2校正能
 		for i in range(n_electron//2):
-			print(i)
 			for j in range(n_electron//2):
 				for k in range(n_electron//2,basis_num):
 					for l in range(n_electron//2,basis_num):
@@ -286,9 +285,9 @@ else:
 	print("输入构型总电子数为%d"  %(n_electron))
 
 
-print("\n原始基函数数目为%d"，%(len(ba)))
+print("\n原始基函数数目为 %d " %(len(ba)))
 if contracted==1:
-	print("使用收缩基进行计算,收缩为"，%(len(contract_list)))
+	print("使用收缩基进行计算, 收缩后为%d"  %(len(contract_list)))
 
 
 if dft==0:
