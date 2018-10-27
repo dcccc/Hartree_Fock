@@ -1,4 +1,4 @@
-## 闭壳的hatree fock和DFT(rhf/rks)小程序
+## 闭壳的Hatree-Fock和DFT(rhf/rks)小程序
 使用python和C++混合写成的闭壳HF和DFT计算的代码，主要在于加深对量子化学理论的理解。
 
 ### 使用方法
