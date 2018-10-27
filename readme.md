@@ -6,7 +6,7 @@
 程序中的C++部分在运行前需要编译成动态链接库，以方便在后续运行中被python调用
 其中grid_int.cpp，analy_int.cpp，Lebedev-Laikov.c编译方法如下
 
-'''
+'''bash
 g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so
 
 # analy_int.cpp 中使用了boost中的函数
