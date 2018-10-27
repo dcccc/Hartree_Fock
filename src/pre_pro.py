@@ -129,15 +129,17 @@ def  input_pp(file):
 		dft=1
 	elif "hf" in keywordline :
 		dft=0
-	elif "contracted" in keywordline :
+	if "contracted" in keywordline :
 		contracted=1
 
-	elif "dft" in keywordline and "hf" in keywordline:
+	if "dft" in keywordline and "hf" in keywordline:
 		print(" 'hf' 和 'dft' 关键词只能同时存在一个!")
+		exit()
 	elif "dft" not in keywordline and "hf" not in keywordline:
 		print(" 'hf' 和 'dft' 关键词必须指定一个!")
+		exit()
 
-	elif "dft" in keywordline and "mp2" in keywordline:
+	if "dft" in keywordline and "mp2" in keywordline:
 		print("####")
 		print("####在dft计算得到的分子轨道基础三做mp2计算，其校正能意义？")
 		print("####")
