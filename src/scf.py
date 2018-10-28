@@ -287,7 +287,7 @@ else:
 
 print("\n原始基函数数目为 %d " %(len(ba)))
 if contracted==1:
-	print("使用收缩基进行计算, 收缩后为%d"  %(len(contract_list)))
+	print("使用收缩基进行计算, 收缩后为%d"  %(len([y for x in contract_list for y in x])))
 
 
 if dft==0:
