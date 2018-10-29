@@ -20,7 +20,7 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 
 之后便可运行
 
-这里已经整理好了一份win10上的，下载地址为 链接: https://pan.baidu.com/s/1b3TtyH0XbCdvfeAB9mf6lA 提取码: 5ckj
+这里已经整理好了一份win10上的，下载地址为 链接: https://pan.baidu.com/s/1dJOEbmBF_sdpYdJxNHghkw 提取码: 2cfe
 
 ### 输入文件 
 
