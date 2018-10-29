@@ -110,7 +110,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 
 			# 生成积分网格点(DFT)
 			xyzw_list=np.array(xyzw_list_gen(atom_xyz))
-			contract_cum=np.cumsum(np.array(contract_list).flatten())
+			contract_cum=np.cumsum(np.array([y for x in contract_list for y in x]))
 			basis_num_con=len(contract_list)
 
 			basis_num1=len(ba)
@@ -189,14 +189,14 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 		ene=ene1
 
 		# 密度矩阵混合
-		p_mat=p_mat1
+		p_mat=p_mat1*0.5+p_mat*0.5
 		n_c=n_c+1
 	
 	
 		#输出能量，能量的变化，以及密度矩阵的变化
 		print("%-4d            %10.8f           %10.8f            %10.8f"  %(n_c, ene, delta_e, delta_p))
-
-
+	print(np.sum(ks_mat*p_mat))
+	print(F_mat)
 	print("scf计算总时间为%fs"  %(time.time()-time1))
 
 
@@ -278,7 +278,10 @@ basis_data=basis_data_p(basis_type)
 ba,nu,contract_list=basis_list(atom_xyz, basis_data)
 n_electron=int(np.sum(np.array(nu)[:,3]))
 
-if n_electron//2 ==1:
+print(n_electron)
+
+if n_electron%2 ==1:
+
 	print("输入构型总电子数为奇数，rhf或rks方法无法计算")
 	exit()
 else:
