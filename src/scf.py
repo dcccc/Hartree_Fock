@@ -148,8 +148,8 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 					if i>=j :
 						
 						#  使用原始基计算得到的xc矩阵
-						ks_mat[i,j]=xc_int_c(ba,i,j,s_mat_dia,p_mat_uncon,xyzw_list,density_list)*\
-						-(9.0/8)*(3.0/math.pi)**(1.0/3)*0.7				
+						ks_mat[i,j]=xc_int_c(ba,i,j,s_mat_dia,p_mat_uncon,xyzw_list,density_list)\
+						*-(3.0/2)*(3.0/math.pi)**(1.0/3)*0.7			
 	
 						ks_mat[j,i]=ks_mat[i,j]
 
@@ -166,7 +166,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 		elif dft==0 :
 			ks_mat=np.zeros((basis_num,basis_num))
 
-
+		
 		#Fock矩阵 及其对角化等
 		F_mat=H_mat+G_mat+ks_mat
 		F_mat_1=np.dot(np.dot(s_mat_05,F_mat),s_mat_05.T)
@@ -174,8 +174,25 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 		e_mat,C_mat=c_normarize(np.dot(s_mat_05,C_mat),e_mat,s_mat,basis_num)
 		p_mat1=pab(C_mat,n_electron)
 	
-		#获得体系能量
-		ene1= all_energy(p_mat,F_mat+H_mat+ks_mat,np.array(nu),basis_num)
+		#计算交换相关能
+		
+		if dft==1:
+			E_xc=0.0
+			for i in range(len(density_list)):
+				for j in range(len(density_list[i])):
+					E_xc+=density_list[i][j]**(4.0/3.0)*xyzw_list[i][j][3]
+
+			E_xc*=4*math.pi*-(9.0/8)*(3.0/math.pi)**(1.0/3)*0.7
+
+			#获得体系能量
+			ene1= all_energy(p_mat,H_mat*2+G_mat,np.array(nu),basis_num)+E_xc
+		else:
+			#获得体系能量
+			ene1= all_energy(p_mat,F_mat+H_mat+ks_mat,np.array(nu),basis_num)
+	
+		
+	
+	
 	
 		#能量差
 		delta_e=abs(ene1-ene)
@@ -195,8 +212,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 	
 		#输出能量，能量的变化，以及密度矩阵的变化
 		print("%-4d            %10.8f           %10.8f            %10.8f"  %(n_c, ene, delta_e, delta_p))
-	print(np.sum(ks_mat*p_mat))
-	print(F_mat)
+
 	print("scf计算总时间为%fs"  %(time.time()-time1))
 
 
