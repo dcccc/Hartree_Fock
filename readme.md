@@ -45,7 +45,7 @@ H      -0.619521783    1.041055708    0.806559037
 ```
 python scf.py h2o.input
 ```
-计算输出将打印在屏幕屏幕上
+计算输出将打印在屏幕上
 
 
 
@@ -57,7 +57,7 @@ python scf.py h2o.input
 
 ### 主要参考资料
 
-1. 由网友zyniso书写整理的关于RHF编程的资料，包含四个网页，分别为http://bbs.keinsci.com/thread-10317-1-1.html、http://bbs.keinsci.com/thread-10368-1-1.html、http://bbs.keinsci.com/thread-10427-1-1.html、http://bbs.keinsci.com/thread-10445-1-1.html
+1. 由网友zyniso书写整理的关于RHF编程的资料，包含四个网页，分别为http://bbs.keinsci.com/thread-10317-1-1.html、 http://bbs.keinsci.com/thread-10368-1-1.html、 http://bbs.keinsci.com/thread-10427-1-1.html、 http://bbs.keinsci.com/thread-10445-1-1.html
 2. 网友sobereva书写整理的关于DFT方法中的积分计算内容资料，http://sobereva.com/69
 3. 书籍《MOLECULAR ELECTRONIC-STRUCTURE THEORY》
 4. 网友Shannon编写的HF代码，http://bbs.keinsci.com/thread-933-1-1.html
