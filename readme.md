@@ -61,6 +61,7 @@ the output line will be updated on the screen
 3. other unknown bugs
 
 
+---------------------------------------------------------------------
 
 
 ## 闭壳的Hatree-Fock和DFT(rhf/rks)小程序
@@ -95,7 +96,7 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 ### 输入文件 
 
 
-输入文件第一行为关键词行，仅支持几个关键词，分别为表示计算类型的“dft”，“hf”，“mp2”，表示基组类型的 “sto3g”，“3-21g”，“6-31g”，和表示使用收缩基计算的“contrcted”，其它词将被忽略
+输入文件第一行为关键词行，仅支持几个关键词，分别为表示计算类型的“dft”，“hf”，“mp2”，表示基组类型的 “sto3g”，“3-21g”，“6-31g”，和表示使用收缩基计算的“contracted”，其它词将被忽略
 
 目前仅支持元素周期表前两周期的元素，并且由于计算速度较慢，请不要尝试大体系的计算，mp2的计算将花费比HF多好几倍的时间，请谨慎使用
 
