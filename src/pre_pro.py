@@ -36,16 +36,6 @@ def basis_data_p(basis_file):
 	return(basis_data)
 
 
-
-
-
-
-
-
-
-
-
-
 def basis_list(coor,basis_data):
 	atom_in={"H":1.0,"He":2.0,"Li":3.0,"Be":4.0,"B":5.0,"C":6.0,"N":7.0,"O":8.0,"F":9.0,"Ne":10.0}
 	ba=[]
@@ -133,15 +123,15 @@ def  input_pp(file):
 		contracted=1
 
 	if "dft" in keywordline and "hf" in keywordline:
-		print(" 'hf' 和 'dft' 关键词只能同时存在一个!")
+		print(" 'hf' or 'dft' can not be used at same time !")
 		exit()
 	elif "dft" not in keywordline and "hf" not in keywordline:
-		print(" 'hf' 和 'dft' 关键词必须指定一个!")
+		print(" 'hf' or 'dft' should be used !")
 		exit()
 
 	if "dft" in keywordline and "mp2" in keywordline:
 		print("####")
-		print("####在dft计算得到的分子轨道基础三做mp2计算，其校正能意义？")
+		print("####usind dft molecule orbit to do mp2 calculation")
 		print("####")
 
 	if "631g" in keywordline or "6-31g" in keywordline :
