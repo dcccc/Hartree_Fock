@@ -22,8 +22,9 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 	n_c=0
 	
 	time0=time.time()
-
-	print("\n单双电子积分计算中....")
+	
+	print("\n")
+	print("eri calculating....")
 	if contracted==1:    #使用收缩基计算时
 
 		contract_cum=np.cumsum(np.array(np.array([y for x in contract_list for y in x])))
@@ -91,8 +92,9 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 
 	ene=0.0
 	
-	print('积分计算消耗时间： %fs'   %(time.time()-time0))
-	print("\n进入scf计算")
+	print('eri calcualtion time ： % 10.3f s'   %(time.time()-time0))
+	print("\n")
+	print("begin scf calcualtion")
 	time1=time.time()
 	print("%-s            %-s            %-s      %-s"  %("cycle", "E(hartree)","delta_e(hartree)","delta_p"))
 	#SCF迭代
@@ -211,14 +213,15 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 	
 	
 		#输出能量，能量的变化，以及密度矩阵的变化
-		print("%-4d            %10.8f           %10.8f            %10.8f"  %(n_c, ene, delta_e, delta_p))
+		print("% 4d            % 10.8f           % 10.8f            % 10.8f"  %(n_c, ene, delta_e, delta_p))
 
-	print("scf计算总时间为%fs"  %(time.time()-time1))
+	print("scf total time is % 10.3f s"  %(time.time()-time1))
 
 
 	time2=time.time()
 	if mp2==1 :#and dft !=1 :
-		print("\nmp2校正能计算中")
+		print("\n")
+		print("mp2 calculating ... ")
 		go_mat=np.zeros((basis_num,basis_num,basis_num,basis_num))
 		go_mat = np.asarray(go_mat, order='C')
 		C_mat = np.asarray(C_mat, order='C')
@@ -246,11 +249,11 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 					for l in range(n_electron//2,basis_num):
 						emp2+= go_mat[i,k,j,l]*(2* go_mat[k,i,l,j]- go_mat[l,i,k,j])/\
 						(e_mat[i]+e_mat[j]-e_mat[k]-e_mat[l])
-		print("mp2校正能：%10.8f               mp2计算时间为%fs"  %(emp2,time.time()-time2))
+		print("mp2 correction is % 10.8f              mp2 calcualting time is % 10.3f s"  %(emp2,time.time()-time2))
 
-
-	print("\n计算总时间为%fs" %(time.time()-time0))
-	print("计算完成")
+	print("\n")
+	print("total calcualting time is % 10.3f s" %(time.time()-time0))
+	print("finished")
 
 
 
@@ -259,6 +262,7 @@ print('''
 ###############################################
 #                                             # 
 #     a python code for ristricted hf/ks      #  
+#                 by dcccc                    #
 #                                             #
 ###############################################
 ''')
@@ -267,23 +271,23 @@ print('''
 
 
 if len(sys.argv)==1:
-	print("没有输入文件！")
+	print("No input file ！")
 	exit()
 elif len(sys.argv)==2:
 	if os.path.isfile(sys.argv[1]):
 		file = sys.argv[1]
 		atom_xyz,dft,mp2,basis_type,contracted= input_pp(file)
 else:
-	print("输入文件不存在！")
+	print("Input file doesn't exist！")
 	exit()
 
 #输出部分计算设置信息
 if len(atom_xyz)>1:
-	print("输入结构如下(bohr)")
+	print(" structure coordinate is ( unit is bohr)")
 	for i in atom_xyz:
-		print("%s      %-6.4f     %-6.4f    %-6.4f"  %tuple(i))
+		print("%s      % 6.4f     % 6.4f    % 6.4f"  %tuple(i))
 else:
-	print("单个原子或没有原子！")
+	print("no atom or only one atom in the input file ！")
 
 
 
@@ -298,21 +302,22 @@ print(n_electron)
 
 if n_electron%2 ==1:
 
-	print("输入构型总电子数为奇数，rhf或rks方法无法计算")
+	print("number of electrons is odd ，calcualtion stops")
 	exit()
 else:
-	print("输入构型总电子数为%d"  %(n_electron))
+	print("number of electrons is % 5d"  %(n_electron))
 
-
-print("\n原始基函数数目为 %d " %(len(ba)))
+print("\n")
+print("number of original basis function is % 4d " %(len(ba)))
 if contracted==1:
-	print("使用收缩基进行计算, 收缩后为%d"  %(len([y for x in contract_list for y in x])))
+	print("use contracted basis set, number of contracted basis function is %d"  \
+	%(len([y for x in contract_list for y in x])))
 
-
-if dft==0:
-	print("\n进入hf计算...")
+print("\n")
+if dft==0:	
+	print("begin HF scf calcualtion")
 else:
-	print("\n进入DFT计算中(泛函为最简单的XAplha)")
+	print("begin DFT scf calcualtion(functional is xaplha)")
 
 
 ba=np.array(ba)
@@ -320,6 +325,5 @@ nu=np.array(nu)
 
 
 scf(ba,nu,contract_list,dft=dft,mp2=mp2,contracted=contracted)
-
 
 
