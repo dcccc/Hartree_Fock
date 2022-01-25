@@ -19,8 +19,6 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 
 and numpy and scipy package are also needed
 
-C++ parts are compiled using mingw on win10, and can be downloaded from https://pan.baidu.com/s/17vxSpDPyDiFY_rHKZF41tg with code: a55q
-
 
 ### Input File
 
@@ -90,7 +88,7 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 
 之后便可运行
 
-这里已经整理好了一份win10上的，下载地址为链接: https://pan.baidu.com/s/17vxSpDPyDiFY_rHKZF41tg 提取码: a55q
+
 
 
 ### 输入文件 
