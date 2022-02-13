@@ -3,7 +3,7 @@
 
 Using a mixture of python and C++ Code write the code. The aim is to get a better understanding of the quantum chemistry basis thoery. 
 
-### How To Use
+### How To build
 
 C++ parts have to be compiled to be dynamic lib, so the python code can used functions in it. The grid_int.cpp，analy_int.cpp，Lebedev-Laikov.c are compiled like
 
@@ -17,8 +17,9 @@ g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so -IC:\pro_Program\boost_1_64_
 gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so 
 ```
 
-and numpy and scipy package are also needed
+And numpy and scipy package are also needed
 
+The pre-build file for windows is ready, which is HF-DFT_win.zip.
 
 ### Input File
 
@@ -87,6 +88,8 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 
 
 之后便可运行
+
+已经编译好可以在windows上运行的文件，如HF-DFT_win.zip
 
 
 
