@@ -1,36 +1,36 @@
 
 ## Closed shell Hatree-Fock and DFT (rhf/rks)calculation code
 
-Using a mixture of python and C++ Code write the code. The aim is to get a better understanding of the quantum chemistry basis thoery. 
+A mixture of python and C++ code. The purpose is to get a better understanding of the quantum chemistry basis theory. 
 
 ### How To build
 
-C++ parts have to be compiled to be dynamic lib, so the python code can used functions in it. The grid_int.cpp，analy_int.cpp，Lebedev-Laikov.c are compiled like
+C++ parts have to be compiled to be dynamic lib, so the python code can use functions in it. The grid_int.cpp，analy_int.cpp and Lebedev-Laikov.c should be compiled like
 
 ```bash
 g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so
 
-# tgamma and gamma_p funciton from boost is used in analy_int.cpp
+# tgamma and gamma_p functions from boost is used in analy_int.cpp
 g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so -IC:\pro_Program\boost_1_64_0 
 
 # Lebedev-Laikov.c comes from https://github.com/Rufflewind/lebedev_laikov
 gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so 
 ```
 
-And numpy and scipy package are also needed
+And package numpy and scipy  are also needed
 
 The pre-build file for windows is ready, which is HF-DFT_win.zip.
 
 ### Input File
 
-the first line is the keyword line, only several keywords are recognized, they are 'dft', 'hf', 'mp2' for mathod, 'sto3g'，'3-21g' and '6-31g' to set the basis set, and 'contracted' to used the contracted basis set, or original basis set will be used. All other word will be omitted.
+The first line is the keyword line, only several keywords are recognized, they are 'dft', 'hf', 'mp2' for method, 'sto3g'，'3-21g' and '6-31g' to set the basis set, and 'contracted' to used the contracted basis set, or original basis set will be used. All other word will be omitted.
 
 Only elements from H to Ne are supported. As calculation is not fast, so don't attempt large systems. And mp2 method always takes much more time than HF, so use it with caution.
 
 A sample input file for 2 H2O is like 
 
 ```
-hf  contrcted  sto3g                                       
+hf  contracted  sto3g                                       
                                                            
 H      -5.566915644    0.795031347    0.111482211          
 O      -4.858802109    0.112000847    0.625433498 
@@ -53,11 +53,11 @@ the output line will be updated on the screen
 ### Bugs
 
 
-1. If the structure is far from stable conformer, the scf may will be not converge
+1. If the structure is far from stable conformer, the scf may will not converge
 
-2. As the numerical integation in DFT is not acurrate enough(functional is xα) , so the energy results will be a little different from the values by orca(using sto3g contracted basis set for CH4, the difference is less than 0.0005 Hatree). The difference will be large for bing structure.
+2. As the numerical integration in DFT is not accurate enough(functional is xα) , so the energy results will be a little different from the values by orca(using sto3g contracted basis set for CH4, the difference is less than 0.0005 Hatree). The difference will be large for big structure.
 
-3. other unknown bugs
+3. Other unknown bugs
 
 
 ---------------------------------------------------------------------
