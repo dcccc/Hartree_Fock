@@ -1,7 +1,7 @@
 
-## Closed shell Hatree-Fock and DFT (rhf/rks)calculation code
+## Closed shell Hartree-Fock and DFT (rhf/rks) calculation code
 
-A mixture of python and C++ code. The purpose is to get a better understanding of the quantum chemistry basis theory. 
+A mixture of python and C++ code. The purpose is to get a better understanding of the quantum chemistry basic theory. 
 
 ### How To build
 
@@ -17,13 +17,13 @@ g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so -IC:\pro_Program\boost_1_64_
 gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so 
 ```
 
-And package numpy and scipy  are also needed
+And packages numpy and scipy are also needed
 
 The pre-build file for windows is ready, which is HF-DFT_win.zip.
 
 ### Input File
 
-The first line is the keyword line, only several keywords are recognized, they are 'dft', 'hf', 'mp2' for method, 'sto3g'，'3-21g' and '6-31g' to set the basis set, and 'contracted' to used the contracted basis set, or original basis set will be used. All other word will be omitted.
+The first line is the keyword line, only several keywords are recognized. They are 'dft', 'hf', 'mp2' for method, 'sto3g'，'3-21g' and '6-31g' to set the basis set, and 'contracted' to use the contracted basis set, or original basis set will be used. All other word will be omitted.
 
 Only elements from H to Ne are supported. As calculation is not fast, so don't attempt large systems. And mp2 method always takes much more time than HF, so use it with caution.
 
@@ -46,7 +46,7 @@ run
 python scf.py h2o.input
 ```
 
-the output line will be updated on the screen
+the output line will be printed on the screen
 
 
 
@@ -55,7 +55,7 @@ the output line will be updated on the screen
 
 1. If the structure is far from stable conformer, the scf may will not converge
 
-2. As the numerical integration in DFT is not accurate enough(functional is xα) , so the energy results will be a little different from the values by orca(using sto3g contracted basis set for CH4, the difference is less than 0.0005 Hatree). The difference will be large for big structure.
+2. As the numerical integration in DFT is not accurate enough (functional is xα) , so the energy results will be a little different from the values by orca(using sto3g contracted basis set for CH4, the difference is less than 0.0005 Hartree). The difference will be large for big structure.
 
 3. Other unknown bugs
 
@@ -97,17 +97,17 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 ### 输入文件 
 
 
-输入文件第一行为关键词行，仅支持几个关键词，分别为表示计算类型的“dft”，“hf”，“mp2”，表示基组类型的 “sto3g”，“3-21g”，“6-31g”，和表示使用收缩基计算的“contracted”，其它词将被忽略
+输入文件第一行为关键词行，仅支持几个关键词，分别为表示计算类型的“dft”，“hf”，“mp2”，表示基组类型的 “sto3g”，“3-21g”，“6-31g”，和表示使用收缩基计算的“contracted”. 其它词将被忽略
 
-目前仅支持元素周期表前两周期的元素，并且由于计算速度较慢，请不要尝试大体系的计算，mp2的计算将花费比HF多好几倍的时间，请谨慎使用
+目前仅支持元素周期表前两周期的元素，并且由于计算速度较慢，请不要尝试大体系的计算. mp2的计算将花费比HF多好几倍的时间，请谨慎使用
 
 
 输入文件见示例如下
 
 ```
-hf  contrcted  sto3g                                       #关键词行
-                                                           #空行
-H      -5.566915644    0.795031347    0.111482211          #原子坐标
+hf  contrcted  sto3g                                       
+                                                           
+H      -5.566915644    0.795031347    0.111482211          
 O      -4.858802109    0.112000847    0.625433498 
 H      -4.035840572    0.704027786    1.077471763 
 H      -2.150596855    1.132059269   -0.159430515 
