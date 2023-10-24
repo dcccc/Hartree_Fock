@@ -1,11 +1,11 @@
-
 ## Closed shell Hartree-Fock and DFT (rhf/rks) calculation code
 
-A mixture of python and C++ code. The purpose is to get a better understanding of the quantum chemistry basic theory. 
+It is a mixture of python and C++ code. The purpose of this code is to gain a better understanding about the basic theory of quantum chemistry . 
 
 ### How To build
 
-C++ parts have to be compiled to be dynamic lib, so the python code can use functions in it. The grid_int.cpp，analy_int.cpp and Lebedev-Laikov.c should be compiled like
+C++ code parts have to be compiled to be dynamic lib, so the python code can use functions in it. Of course, a pure python verison of funtions also prepared, which will be used when c++ libs are not presented. But the python verison functions are slower than c++ funtions.
+The grid_int.cpp，analy_int.cpp and Lebedev-Laikov.c should be compiled like
 
 ```bash
 g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so
@@ -19,7 +19,7 @@ gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so
 
 And packages numpy and scipy are also needed
 
-The pre-build file for windows is ready, which is HF-DFT_win.zip.
+The pre-build file for windows is ready, which is [HF-DFT_win.zip](https://github.com/dcccc/Hartree_Fock/blob/master/HF-DFT_win.zip).
 
 ### Input File
 
@@ -42,7 +42,7 @@ H      -0.619521783    1.041055708    0.806559037
 
 run 
 
-```
+```bash
 python scf.py h2o.input
 ```
 
@@ -57,7 +57,11 @@ the output line will be printed on the screen
 
 2. As the numerical integration in DFT is not accurate enough (functional is xα) , so the energy results will be a little different from the values by orca(using sto3g contracted basis set for CH4, the difference is less than 0.0005 Hartree). The difference will be large for big structure.
 
-3. Other unknown bugs
+3. For hf or dft method, the final energy resuslts between using pure python functions and functions in c++ libs ame input context may be different, but usually the difference is small, and can assumed to be numerial error. 
+
+3. mp2 calculation can only conducted when grid_int.cpp is compiled to be grid_int.so properly.
+
+4. Other unknown bugs
 
 
 ---------------------------------------------------------------------
@@ -71,6 +75,7 @@ the output line will be printed on the screen
 
 
 程序中的C++部分在运行前需要编译成动态链接库，以方便在后续运行中被python调用
+如果没有编译c++部分，计算将使用内置的纯python函数。c++库版本的函数总是比纯python的函数快，特别是dft方法
 其中grid_int.cpp，analy_int.cpp，Lebedev-Laikov.c编译方法如下
 
 
@@ -133,7 +138,11 @@ python scf.py h2o.input
 
 2. 由于格点积分精度不够高，DFT(泛函为最简单的xα)计算得到的能量与orca计算的能量之间存在一些差别(ch4使用sto3g收缩基与ORCA差别小于0.0005Hartree)，较大的体系可能差别较大而不可忽略
 
-3. 其它未知的bug
+3. 对于hf和dft，c++库中的函数计算的能量结果和纯python函数计算的结果之间存在一定的差别，但一般而言差别非常小，可以认为只是数值计算误差
+
+4. mp2的计算只能在grid_int.cpp被编译成grid_int.so库文件时才能计算，由于mp2计算中有一步非常耗时，所以没有纯python版本的函数可以计算
+
+5. 其它未知的bug
 
 
 ### 主要参考资料
