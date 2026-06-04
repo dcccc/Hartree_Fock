@@ -478,8 +478,8 @@ def contract_int(ba,contract_cum,int_mat,contract_mat,gabcd=0):
 # 
 
 from ctypes import cdll,c_double,POINTER,c_int
-if os.path.exists("./analy_int.so"):
-    cfun=cdll.LoadLibrary("./analy_int.so")
+if os.path.exists("./analy_int.so1"):
+    cfun=cdll.LoadLibrary("./analy_int.so1")
 
 
 def smat_pri(ba,smat,smat_dia):

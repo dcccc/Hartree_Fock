@@ -29,14 +29,14 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
     if contracted==1:    
         # the index of contracted basis function
         contract_cum=np.cumsum(np.array(np.array([y for x in contract_list for y in x])))
-        contract_cum1=np.insert(contract_cum,0,0)
+        contract_cum1=np.insert(contract_cum,0,0).astype(np.int32)
         # number of contracted basis function 
         basis_num=len(contract_cum)
         # contracted basis function list 
         ba_con = [ba[i:contract_cum1[n+1]] for n,i in enumerate(contract_cum1[:-1])]
 
         # funtions in c++ libs used 
-        if func_c :
+        if func_c_ana :
             # calculaiton of S matrix
             s_mat_dia=np.zeros((len(ba)))
             s_mat=np.zeros((basis_num,basis_num))
@@ -72,7 +72,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
     # when primitive basis is used
     else: 
         # funtions in c++ libs used 
-        if func_c:
+        if func_c_ana:
             # calculaiton of S matrix
             s_mat_dia=np.zeros((len(ba)))
             s_mat=np.zeros((basis_num,basis_num))
@@ -128,7 +128,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 
     ene=0.0
     
-    print('eri calcualtion time ： % 10.3f s'   %(time.time()-time0))
+    print('eri calcualtion time : % 10.3f s'   %(time.time()-time0))
     print("\n")
     print("begin scf calcualtion")
     time1=time.time()
@@ -147,7 +147,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
             
             # generate grid point for atoms
             xyzw_list=[]            
-            xyzw_list=np.array(xyzw_list_gen(atom_xyz))
+            xyzw_list=xyzw_list_gen(atom_xyz)
             contract_cum=np.cumsum(np.array([y for x in contract_list for y in x]))
             basis_num_con=len(contract_list)
 
@@ -173,18 +173,18 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 
 
                 # calculation of electron density at grid points
-                if func_c:
-                    density_list=np.array(density_pot_list_c_contra(ba,xyzw_list,s_mat_dia,p_mat_uncon))
+                if func_c_grid:
+                    density_list=density_pot_list_c_contra(ba,xyzw_list,s_mat_dia,p_mat_uncon)
                 else:
-                    density_list=np.array(density_pot_list_contra(ba,xyzw_list,s_mat_dia,p_mat_uncon))
+                    density_list=density_pot_list_contra(ba,xyzw_list,s_mat_dia,p_mat_uncon)
 
             # when primitive basis used 
             else:
                 # calculation of electron density at grid points
-                if func_c:
-                    density_list=np.array(density_pot_list_c(ba,xyzw_list,s_mat_dia,p_mat))
+                if func_c_grid:
+                    density_list=density_pot_list_c(ba,xyzw_list,s_mat_dia,p_mat)
                 else:
-                    density_list=np.array(density_pot_list(ba,xyzw_list,s_mat_dia,p_mat))
+                    density_list=density_pot_list(ba,xyzw_list,s_mat_dia,p_mat)
                 p_mat_uncon=p_mat
 
             #  calculaiton of XC functional potential(Xalpha functional)
@@ -192,7 +192,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
             for i in range(basis_num1):
                 for j in range(basis_num1):
                     if i>=j :                        
-                        if func_c:
+                        if func_c_grid:
                             ks_mat[i,j]=xc_int_c(ba,i,j,s_mat_dia,p_mat_uncon,xyzw_list,density_list)\
                             *-(3.0/2)*(3.0/math.pi)**(1.0/3)*0.7            
                         else:
@@ -203,10 +203,11 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
         # do HF calculation
         else:
             #  calculation of G matrix
-            for i in range(basis_num):
-                for j in range(basis_num):
-                    G_mat[i,j]=g_ab_jk(p_mat, gabcd_mat, i, j, basis_num)
-
+            # for i in range(basis_num):
+            #     for j in range(basis_num):
+            #         G_mat[i,j]=g_ab_jk(p_mat, gabcd_mat, i, j, basis_num)
+            G_mat = np.einsum("kl,ijkl->ij", p_mat, gabcd_mat) - \
+              0.5 * np.einsum("kl,iljk->ij", p_mat, gabcd_mat)
         if contracted==1 and dft==1:
             #  calculate XC matrix of contracted basis form XC matrix of primitive basis 
             ks_mat=contract_int(ba,contract_cum,ks_mat,np.zeros((basis_num,basis_num)))
@@ -273,32 +274,44 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
         # the calculation may take hours, and calculation is feasible only 
         # using c++ lib function 
         # eq (16.6) in book of "quantum chemistry" 7th edition by levine 
-        go_mat=np.zeros((basis_num,basis_num,basis_num,basis_num))
-        go_mat = np.asarray(go_mat, order='C')
-        C_mat = np.asarray(C_mat, order='C')
+        # go_mat=np.zeros((basis_num,basis_num,basis_num,basis_num))
+        # go_mat = np.asarray(go_mat, order='C')
+        # C_mat = np.asarray(C_mat, order='C')
 
-        go_mat = np.asarray(go_mat, order='C')
-        go_mat1=go_mat.ctypes.data_as(POINTER(c_double))
-        gabcd_mat = np.asarray(gabcd_mat, order='C')
-        gabcd_mat1 =gabcd_mat.ctypes.data_as(POINTER(c_double))
-        C_mat = np.asarray(C_mat, order='C')
-        C_mat1 =C_mat.ctypes.data_as(POINTER(c_double))
+        # go_mat = np.asarray(go_mat, order='C')
+        # go_mat1=go_mat.ctypes.data_as(POINTER(c_double))
+        # gabcd_mat = np.asarray(gabcd_mat, order='C')
+        # gabcd_mat1 =gabcd_mat.ctypes.data_as(POINTER(c_double))
+        # C_mat = np.asarray(C_mat, order='C')
+        # C_mat1 =C_mat.ctypes.data_as(POINTER(c_double))
+        # cfun.aomo1(gabcd_mat1,go_mat1,C_mat1,c_int(basis_num))
 
 
-        cfun.aomo1(gabcd_mat1,go_mat1,C_mat1,c_int(basis_num))
-        
+        C_mat_T = C_mat.T
+        # eq(14)-(17) in https://vergil.chemistry.gatech.edu/static/content/df.pdf
+        # i_v_k_l = np.einsum("uvkl,iu->ivkl", gabcd_mat, C_mat_T[:5])
+        # i_a_k_l = np.einsum("ivkl,av->iakl", i_v_k_l,   C_mat_T[5:])
+        # i_a_j_l = np.einsum("iakl,jk->iajl", i_a_k_l,   C_mat_T[:5])
+        # i_a_j_b = np.einsum("iajl,bl->iajb", i_a_j_l,   C_mat_T[5:])
+
+        n_occupid = n_electron//2
+        iajb = np.einsum("uvkl,iu->ivkl", gabcd_mat, C_mat_T[:n_occupid])
+        iajb = np.einsum("ivkl,av->iakl", iajb,      C_mat_T[n_occupid:])
+        iajb = np.einsum("iakl,jk->iajl", iajb,      C_mat_T[:n_occupid])
+        iajb = np.einsum("iajl,bl->iajb", iajb,      C_mat_T[n_occupid:])
+
         
         
         emp2=0.0
 
         # calculaiton of mp2 correction energy
         # eq (16.13) in book of "quantum chemistry" 7th edition by levine 
-        for i in range(n_electron//2):
-            for j in range(n_electron//2):
-                for k in range(n_electron//2,basis_num):
-                    for l in range(n_electron//2,basis_num):
-                        emp2+= go_mat[i,k,j,l]*(2* go_mat[k,i,l,j]- go_mat[l,i,k,j])/\
-                        (e_mat[i]+e_mat[j]-e_mat[k]-e_mat[l])
+        for i in range(n_occupid):
+            for j in range(n_occupid):
+                for a in range(basis_num - n_occupid):
+                    for b in range(basis_num - n_occupid):
+                        emp2+= iajb[i,a,j,b]*(2* iajb[i,a,j,b]- iajb[i,b,j,a])/\
+                        (e_mat[i]+e_mat[j]-e_mat[a+n_occupid]-e_mat[b+n_occupid])
         print("mp2 correction is % 10.8f              mp2 calcualting time is % 10.3f s"  %(emp2,time.time()-time2))
 
     print("\n")
@@ -382,10 +395,13 @@ else:
 # whether c++ lib exist or not 
 # functions in C++ libs will be used when C++ libs are compiled, the calculation 
 # will much faster then using the pure python fuctions when C++ libs missed
-func_c = os.path.exists("./analy_int.so1")
-if func_c:
-    cfun=cdll.LoadLibrary("./grid_int.so")
-    ba=np.array(ba)
+func_c_ana = os.path.exists("./analy_int.so1")
+func_c_grid = os.path.exists("./grid_int.so1")
+
+if func_c_ana:
+    ba=np.asarray(ba)
+    nu=np.asarray(nu)
+
 
 # do the scf calculation
 scf(ba,nu,contract_list,dft=dft,mp2=mp2,contracted=contracted)

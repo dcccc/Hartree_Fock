@@ -1,12 +1,12 @@
 #coding:utf-8
 import numpy as np
 import math,copy,os
-import  lebedev_laikov
+import lebedev_laikov
 from ctypes import cdll,c_double,POINTER,c_int
 
-if os.path.exists("./grid_int.so"):
-    cfun=cdll.LoadLibrary("./grid_int.so")
-cfun.grid_int.restype=c_double
+if os.path.exists("./grid_int.so1"):
+    cfun=cdll.LoadLibrary("./grid_int.so1")
+    cfun.grid_int.restype=c_double
 
 
 # becke's weight scheme  (10.1063/1.454033)

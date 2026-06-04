@@ -8,10 +8,10 @@ C++ code parts have to be compiled to be dynamic lib, so the python code can use
 The grid_int.cpp，analy_int.cpp and Lebedev-Laikov.c should be compiled like
 
 ```bash
-g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so
+g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so1
 
 # tgamma and gamma_p functions from boost is used in analy_int.cpp
-g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so -IC:\pro_Program\boost_1_64_0 
+g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so1 -IC:\pro_Program\boost_1_64_0 
 
 # Lebedev-Laikov.c comes from https://github.com/Rufflewind/lebedev_laikov
 gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so 
@@ -59,8 +59,6 @@ the output line will be printed on the screen
 
 3. For hf or dft method, the final energy resuslts between using pure python functions and functions in c++ libs ame input context may be different, but usually the difference is small, and can assumed to be numerial error. 
 
-3. mp2 calculation can only conducted when grid_int.cpp is compiled to be grid_int.so properly.
-
 4. Other unknown bugs
 
 
@@ -80,10 +78,10 @@ the output line will be printed on the screen
 
 
 ```bash
-g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so
+g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so1
 
 # analy_int.cpp 中使用了boost中的函数
-g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so -IC:\pro_Program\boost_1_64_0 
+g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so1 -IC:\pro_Program\boost_1_64_0 
 
 # Lebedev-Laikov.c 引用于 https://github.com/Rufflewind/lebedev_laikov
 gcc Lebedev-Laikov.c -fPIC -shared -O3 -o liblebedevlaikov.so 
@@ -139,8 +137,6 @@ python scf.py h2o.input
 2. 由于格点积分精度不够高，DFT(泛函为最简单的xα)计算得到的能量与orca计算的能量之间存在一些差别(ch4使用sto3g收缩基与ORCA差别小于0.0005Hartree)，较大的体系可能差别较大而不可忽略
 
 3. 对于hf和dft，c++库中的函数计算的能量结果和纯python函数计算的结果之间存在一定的差别，但一般而言差别非常小，可以认为只是数值计算误差
-
-4. mp2的计算只能在grid_int.cpp被编译成grid_int.so库文件时才能计算，由于mp2计算中有一步非常耗时，所以没有纯python版本的函数可以计算
 
 5. 其它未知的bug
 

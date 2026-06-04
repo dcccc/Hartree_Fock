@@ -56,14 +56,14 @@ def basis_list(coor,basis_data):
             temp1=[i[1],i[2],i[3],atom_in[i[0]]]
             nu.append(temp1)
             temp2=[]
-            basis_data_t=basis_data["C"]["S"]            
+            basis_data_t=basis_data[i[0]]["S"]            
             for ii in basis_data_t:
                 temp2.append(len(ii))
                 for j in ii:
                     temp=[i[1],i[2],i[3],0,0,0,float(j[0]),float(j[1])]        
                     ba.append(temp)
 
-            basis_data_t=basis_data["C"]["SP"]
+            basis_data_t=basis_data[i[0]]["SP"]
 
             for ii in basis_data_t:
                 temp2.append(len(ii))
@@ -84,7 +84,7 @@ def basis_list(coor,basis_data):
             temp2=[]
             temp1=[i[1],i[2],i[3],atom_in[i[0]]]
             nu.append(temp1)
-            basis_data_t=basis_data["H"]["S"]
+            basis_data_t=basis_data[i[0]]["S"]
             for ii in basis_data_t:
                 temp2.append(len(ii))
                 for j in ii :                    
@@ -115,7 +115,7 @@ def xyz_file_pp(xyz_file):
 
 def input_pp(file):
     file=open(file,"r").readlines()
-    keywordline = file[0]
+    keywordline = file[0].strip().split()
 
     contracted =0
     mp2=0
