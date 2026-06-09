@@ -93,8 +93,7 @@ def xyzw2(atom_i,atom_xyz,atom_distan,w=1):
 
     atom_xyz_i=atom_xyz[atom_i]
     atom_r=radii[atom_xyz_i[0]][0]
-    p=radii[atom_xyz_i[0]][1]
-    # print(p)
+    p=radii[atom_xyz_i[0]][0]
 
     if atom_xyz_i[0] in ["H","He"]:
         a_list=sg0_a_list[0]
@@ -108,9 +107,9 @@ def xyzw2(atom_i,atom_xyz,atom_distan,w=1):
         xi=i/(radial_n+1.0)
         # the weight of every point in integral
         # eq (7) in paper "A standard grid for density functional calculations"(10.1016/0009-2614(93)80125-9)
-        ri=p*xi**2/(1-xi)**2
+        ri=p*i**2/(radial_n+1-i)**2
         # eq (6)
-        wi=2*p**3/(radial_n+1.0)*xi**5/(1-xi)**7
+        wi=2*p**3/(radial_n+1.0)*i**5/(radial_n+1-xi)**7
 
         # select grid point acoording to the radial Partitioning parameters and atom radii
         if ri<a_list[0]*atom_r:
