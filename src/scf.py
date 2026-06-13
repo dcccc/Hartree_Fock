@@ -28,7 +28,7 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
     # when contracted basis is used
     if contracted==1:    
         # the index of contracted basis function
-        contract_cum=np.cumsum(np.array(np.array([y for x in contract_list for y in x])))
+        contract_cum=np.cumsum(np.array(np.array([y for x in contract_list for y in x]))).astype(np.int32)
         contract_cum1=np.insert(contract_cum,0,0).astype(np.int32)
         # number of contracted basis function 
         basis_num=len(contract_cum)
@@ -134,6 +134,11 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
     time1=time.time()
     print("%-s            %-s            %-s      %-s"  %("cycle", "E(hartree)","delta_e(hartree)","delta_p"))
    
+
+    if dft==1:
+        xyzw_list   = xyzw_list=np.vstack(xyzw_list_gen(atom_xyz))
+        density_mat = np.array(get_density_list(ba,s_mat_dia,xyzw_list))
+
     # begain scf calculation 
     while(delta_e>1*10**-8 or delta_p>1*10**-6):
     
@@ -141,24 +146,21 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
         # initialize a zero G matrix
         G_mat=np.zeros((basis_num, basis_num))        
 
-
         # do the DFT calculation 
         if dft==1:
             
             # generate grid point for atoms
-            xyzw_list=[]            
-            xyzw_list=xyzw_list_gen(atom_xyz)
             contract_cum=np.cumsum(np.array([y for x in contract_list for y in x]))
             basis_num_con=len(contract_list)
 
             basis_num1=len(ba)
-            ks_mat=np.zeros((basis_num1,basis_num1))
 
             # calculation of coulomb matrix
-            for i in range(basis_num):
-                for j in range(basis_num):
-                    G_mat[i,j]=g_ab_j(p_mat,gabcd_mat,i,j,basis_num)            
-            
+            # for i in range(basis_num):
+            #     for j in range(basis_num):
+            #         G_mat[i,j]=g_ab_j(p_mat,gabcd_mat,i,j,basis_num)
+            G_mat = np.einsum("kl,ijkl->ij", p_mat, gabcd_mat)
+
             # when contracted basis used 
             if contracted==1:
                 # initialize a zero density matrix under primitive basis condition, 
@@ -171,34 +173,14 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
                             p_mat_uncon[contract_cum1[i]:contract_cum1[i+1],contract_cum1[j]:contract_cum1[j+1],]=p_mat[i,j]
                             p_mat_uncon[contract_cum1[j]:contract_cum1[j+1],contract_cum1[i]:contract_cum1[i+1],]=p_mat[j,i]
 
-
-                # calculation of electron density at grid points
-                if func_c_grid:
-                    density_list=density_pot_list_c_contra(ba,xyzw_list,s_mat_dia,p_mat_uncon)
-                else:
-                    density_list=density_pot_list_contra(ba,xyzw_list,s_mat_dia,p_mat_uncon)
-
             # when primitive basis used 
             else:
-                # calculation of electron density at grid points
-                if func_c_grid:
-                    density_list=density_pot_list_c(ba,xyzw_list,s_mat_dia,p_mat)
-                else:
-                    density_list=density_pot_list(ba,xyzw_list,s_mat_dia,p_mat)
                 p_mat_uncon=p_mat
 
             #  calculaiton of XC functional potential(Xalpha functional)
             #  page 562 in book of "quantum chemistry" 7th edition by levine 
-            for i in range(basis_num1):
-                for j in range(basis_num1):
-                    if i>=j :                        
-                        if func_c_grid:
-                            ks_mat[i,j]=xc_int_c(ba,i,j,s_mat_dia,p_mat_uncon,xyzw_list,density_list)\
-                            *-(3.0/2)*(3.0/math.pi)**(1.0/3)*0.7            
-                        else:
-                            ks_mat[i,j]=xc_int(ba,i,j,s_mat_dia,p_mat_uncon,xyzw_list,density_list)\
-                            *-(3.0/2)*(3.0/math.pi)**(1.0/3)*0.7
-                        ks_mat[j,i]=ks_mat[i,j]
+            ks_mat, total_density = grid_int(p_mat_uncon, xyzw_list, density_mat, ba) 
+            ks_mat=ks_mat*-(3.0/2)*(3.0/np.pi)**(1.0/3) * (2./3)      
         
         # do HF calculation
         else:
@@ -227,11 +209,9 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
         # eq (16.61) in book of "quantum chemistry" 7th edition by levine 
         if dft==1:
             E_xc=0.0
-            for i in range(len(density_list)):
-                for j in range(len(density_list[i])):
-                    E_xc+=density_list[i][j]**(4.0/3.0)*xyzw_list[i][j][3]
+            E_xc=np.sum(total_density**(4.0/3.0)*xyzw_list[:,3])
 
-            E_xc*=4*math.pi*-(9.0/8)*(3.0/math.pi)**(1.0/3)*0.7
+            E_xc*= 4*math.pi*-(9.0/8)*(3.0/math.pi)**(1.0/3)* (2./3) 
 
             # DFT energy of mol
             ene1= all_energy(p_mat,H_mat*2+G_mat,np.array(nu),basis_num)+E_xc
@@ -396,7 +376,6 @@ else:
 # functions in C++ libs will be used when C++ libs are compiled, the calculation 
 # will much faster then using the pure python fuctions when C++ libs missed
 func_c_ana = os.path.exists("./analy_int.so1")
-func_c_grid = os.path.exists("./grid_int.so1")
 
 if func_c_ana:
     ba=np.asarray(ba)

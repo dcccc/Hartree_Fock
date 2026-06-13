@@ -156,149 +156,59 @@ def xyzw_list_gen(atom_xyz):
     return(xyzw_list)
 
 # calculate the electron density of grid points for basis function
-def density_pot(ga,gb,pot):
+def density_pot(ga,gb,pos_list):
     x1,y1,z1,i1,j1,k1,a1,_=ga
     x2,y2,z2,i2,j2,k2,a2,_=gb
-    x1,x2=pot[0]-x1,pot[0]-x2
-    y1,y2=pot[1]-y1,pot[1]-y2
-    z1,z2=pot[2]-z1,pot[2]-z2
+    dx1, dx2=pos_list[:,0]-x1, pos_list[:,0]-x2
+    dy1, dy2=pos_list[:,1]-y1, pos_list[:,1]-y2
+    dz1, dz2=pos_list[:,2]-z1, pos_list[:,2]-z2
 
-    density=x1**i1*y1**j1*z1**k1*math.exp(-(x1**2+y1**2+z1**2)*a1)
-    density*=x2**i2*y2**j2*z2**k2*math.exp(-(x2**2+y2**2+z2**2)*a2)
+    density =dx1**i1*dy1**j1*dz1**k1*np.exp(-(dx1**2+dy1**2+dz1**2)*a1)
+    density*=dx2**i2*dy2**j2*dz2**k2*np.exp(-(dx2**2+dy2**2+dz2**2)*a2)
     return(density)
 
-# calculate the electron density at one point from all basis function
-def density_pot_t(ba,p_mat,s_mat_dia,pot):
-    density=0.0
+def get_density_list(ba,s_mat_dia,xyzw_list):
+    density_mat = []
     for i in range(len(ba)):
         for j in range(len(ba)):
             if i>j:
-                density+=2*density_pot(ba[i],ba[j],pot)/(s_mat_dia[i]*s_mat_dia[j])**0.5*p_mat[i,j]
+                density =2*density_pot(ba[i],ba[j],xyzw_list)/(s_mat_dia[i]*s_mat_dia[j])**0.5
+                density_mat.append(density)
             elif i==j:
-                density+=  density_pot(ba[i],ba[i],pot)/s_mat_dia[i]*p_mat[i,i]
+                density =  density_pot(ba[i],ba[i],xyzw_list)/s_mat_dia[i]
+                density_mat.append(density)
 
-    return(density)
+    return(density_mat)
 
-# calculate the electron density at one point for contracted basis set
-def density_pot_list_t_contra(ba,p_mat,s_mat_dia,pot):
-    density=0.0
-    for i in range(len(ba)):
-        for j in range(len(ba)):
+
+
+
+def grid_int(p_mat, xyzw_list, density_mat, ba):
+    total_density = 0
+    n=0
+    for i in range(p_mat.shape[0]):
+        for j in range(p_mat.shape[0]):
+            if i>=j:
+                total_density+= p_mat[i,j] * density_mat[n] * ba[i][-1] * ba[j][-1] 
+                n+=1
+
+
+    ks_mat = np.zeros(p_mat.shape)
+
+    total_density_13 = total_density**(1./3.)
+
+    n=0
+    for i in range(p_mat.shape[0]):
+        for j in range(p_mat.shape[0]):
             if i>j:
-                density+=2*density_pot(ba[i],ba[j],pot)/(s_mat_dia[i]*s_mat_dia[j])**0.5*p_mat[i,j]*ba[i][-1]*ba[j][-1]
-            elif i==j:
-                density+=  density_pot(ba[i],ba[i],pot)/s_mat_dia[i]*p_mat[i,i]*ba[i][-1]**2
+                ks_mat[i,j] = np.sum(density_mat[n]/2 * total_density_13 * xyzw_list[:,3])
+                ks_mat[j,i] = ks_mat[i,j]
+                n+=1
+            if i==j:
+                ks_mat[i,j] = np.sum(density_mat[n]   * total_density_13 * xyzw_list[:,3])
+                n+=1
+                
+    ks_mat = ks_mat * np.pi * 4
 
-    return(density)
-
-
-# calculate the electron density for primitive basis set
-def density_pot_list(ba,xyzw_list,s_mat_dia,p_mat):
-    density_list=[]
-    for i in range(len(xyzw_list)):
-        temp1=[]
-        xyzw1=xyzw_list[i]
-        for j in range(len(xyzw1)):
-            density=density_pot_t(ba,p_mat,s_mat_dia,xyzw1[j][:3])
-            temp1.append(density)
-        density_list.append(temp1)
-    return(density_list)
-
-# calculate the electron density for contracted basis set
-def density_pot_list_contra(ba,xyzw_list,s_mat_dia,p_mat):
-    density_list=[]
-    for i in range(len(xyzw_list)):
-        temp1=[]
-        xyzw1=xyzw_list[i]
-        for j in range(len(xyzw1)):
-            density=density_pot_list_t_contra(ba,p_mat,s_mat_dia,xyzw1[j][:3])
-            temp1.append(density)
-        density_list.append(temp1)
-    return(density_list)
-
-# density integral of grid point 
-def grid_int(ga, gb, xyzw, density_list):
-    density=0.0;
-    for n,i in enumerate(xyzw):
-        density+=density_pot(ga,gb, i[:3])*i[3]*density_list[n]**(1.0/3.0)
-    return density;
-
-# integral of grid point 
-def xc_int(ba,ii,jj,s_mat_dia,p_mat,xyzw_list,density_list,p=1):
-
-    sum1=0.0    
-    ba=np.array(ba)
-    for k in range(len(density_list)):
-        sum1+=grid_int(ba[ii],ba[jj],xyzw_list[k], density_list[k])
-        
-    return(sum1*math.pi*4/(s_mat_dia[ii]*s_mat_dia[jj])**0.5)
-
-#
-#  c++ lib version functions 
-#
-
-def density_pot_list_c(ba,xyzw_list,s_mat_dia,p_mat):
-    density_list=[]
-    ba=np.array(ba)
-
-    basis_num=c_int(len(ba))
-
-    s_mat_dia1=s_mat_dia.ctypes.data_as(POINTER(c_double))
-    p_mat1=p_mat.ctypes.data_as(POINTER(c_double))
-
-    ba1=ba.ctypes.data_as(POINTER(c_double))
-
-
-    for i in range(len(xyzw_list)):
-        len1=len(xyzw_list[i])
-        temp1=np.zeros((len1))
-        xyzw1=xyzw_list[i].ctypes.data_as(POINTER(c_double))
-        temp21=temp1.ctypes.data_as(POINTER(c_double))
-        cfun.density_pot_list(ba1,p_mat1,s_mat_dia1,xyzw1,temp21,basis_num,c_int(len1))
-
-        density_list.append(temp1)
-    return(density_list)
-
-
-
-def density_pot_list_c_contra(ba,xyzw_list,s_mat_dia,p_mat):
-    density_list=[]
-    ba=np.array(ba)
-
-    basis_num=c_int(len(ba))
-
-    s_mat_dia1=s_mat_dia.ctypes.data_as(POINTER(c_double))
-    p_mat1=p_mat.ctypes.data_as(POINTER(c_double))
-
-    ba1=ba.ctypes.data_as(POINTER(c_double))
-
-
-    for i in range(len(xyzw_list)):
-        len1=len(xyzw_list[i])
-        temp1=np.zeros((len1))
-        xyzw1=xyzw_list[i].ctypes.data_as(POINTER(c_double))
-        temp21=temp1.ctypes.data_as(POINTER(c_double))
-        cfun.density_pot_list_contra(ba1,p_mat1,s_mat_dia1,xyzw1,temp21,basis_num,c_int(len1))
-
-        density_list.append(temp1)
-    return(density_list)
-
-
-
-def xc_int_c(ba,ii,jj,s_mat_dia,p_mat,xyzw_list,density_list,p=1):
-
-    sum1=0.0    
-    ba=np.array(ba)
-    ga=ba[ii].ctypes.data_as(POINTER(c_double))
-    gb=ba[jj].ctypes.data_as(POINTER(c_double))
-
-    for k in range(len(density_list)):
-        len1=len(xyzw_list[k])
-        xyzw1=xyzw_list[k].ctypes.data_as(POINTER(c_double))
-        density_list1=density_list[k].ctypes.data_as(POINTER(c_double))
-        sum1+=cfun.grid_int(ga,gb,xyzw1,density_list1,c_int(len1))
-        
-    return(sum1*math.pi*4/(s_mat_dia[ii]*s_mat_dia[jj])**0.5)
-
-
+    return(ks_mat, total_density)
 

@@ -8,8 +8,6 @@ C++ code parts have to be compiled to be dynamic lib, so the python code can use
 The grid_int.cpp，analy_int.cpp and Lebedev-Laikov.c should be compiled like
 
 ```bash
-g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so1
-
 # tgamma and gamma_p functions from boost is used in analy_int.cpp
 g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so1 -IC:\pro_Program\boost_1_64_0 
 
@@ -57,7 +55,7 @@ the output line will be printed on the screen
 
 2. As the numerical integration in DFT is not accurate enough (functional is xα) , so the energy results will be a little different from the values by orca(using sto3g contracted basis set for CH4, the difference is less than 0.0005 Hartree). The difference will be large for big structure.
 
-3. For hf or dft method, the final energy resuslts between using pure python functions and functions in c++ libs ame input context may be different, but usually the difference is small, and can assumed to be numerial error. 
+3. For hf method, the final energy resuslts between using pure python functions and functions in c++ libs ame input context may be different, but usually the difference is small, and can assumed to be numerial error. 
 
 4. Other unknown bugs
 
@@ -78,8 +76,6 @@ the output line will be printed on the screen
 
 
 ```bash
-g++ grid_int.cpp -fPIC -shared -O3 -o grid_int.so1
-
 # analy_int.cpp 中使用了boost中的函数
 g++ analy_int.cpp -fPIC -shared -O3 -o analy_int.so1 -IC:\pro_Program\boost_1_64_0 
 
@@ -136,7 +132,7 @@ python scf.py h2o.input
 
 2. 由于格点积分精度不够高，DFT(泛函为最简单的xα)计算得到的能量与orca计算的能量之间存在一些差别(ch4使用sto3g收缩基与ORCA差别小于0.0005Hartree)，较大的体系可能差别较大而不可忽略
 
-3. 对于hf和dft，c++库中的函数计算的能量结果和纯python函数计算的结果之间存在一定的差别，但一般而言差别非常小，可以认为只是数值计算误差
+3. 对于hf，c++库中的函数计算的能量结果和纯python函数计算的结果之间存在一定的差别，但一般而言差别非常小，可以认为只是数值计算误差
 
 5. 其它未知的bug
 
