@@ -150,63 +150,44 @@ def xyzw_list_gen(atom_xyz):
                 atom_distan[j,i]=temp**0.5
 
     xyzw_list=[]
+
     for i in range(atom_num):
         xyzw_list.append(xyzw2(i,atom_xyz,atom_distan))
 
     return(xyzw_list)
 
 # calculate the electron density of grid points for basis function
-def density_pot(ga,gb,pos_list):
-    x1,y1,z1,i1,j1,k1,a1,_=ga
-    x2,y2,z2,i2,j2,k2,a2,_=gb
-    dx1, dx2=pos_list[:,0]-x1, pos_list[:,0]-x2
-    dy1, dy2=pos_list[:,1]-y1, pos_list[:,1]-y2
-    dz1, dz2=pos_list[:,2]-z1, pos_list[:,2]-z2
+def density_position(ga,pos_list):
+    x1,y1,z1,i1,j1,k1,a1,c1=ga
+    dx1=pos_list[:,0]-x1
+    dy1=pos_list[:,1]-y1 
+    dz1=pos_list[:,2]-z1
 
     density =dx1**i1*dy1**j1*dz1**k1*np.exp(-(dx1**2+dy1**2+dz1**2)*a1)
-    density*=dx2**i2*dy2**j2*dz2**k2*np.exp(-(dx2**2+dy2**2+dz2**2)*a2)
+
     return(density)
 
+
 def get_density_list(ba,s_mat_dia,xyzw_list):
-    density_mat = []
+    density_list = []
     for i in range(len(ba)):
-        for j in range(len(ba)):
-            if i>j:
-                density =2*density_pot(ba[i],ba[j],xyzw_list)/(s_mat_dia[i]*s_mat_dia[j])**0.5
-                density_mat.append(density)
-            elif i==j:
-                density =  density_pot(ba[i],ba[i],xyzw_list)/s_mat_dia[i]
-                density_mat.append(density)
+        density = density_position(ba[i],xyzw_list)/s_mat_dia[i]**0.5
+        density_list.append(density)
 
-    return(density_mat)
+    density_list = np.array(density_list)
+
+    return(density_list)
 
 
 
 
-def grid_int(p_mat, xyzw_list, density_mat, ba):
-    total_density = 0
-    n=0
-    for i in range(p_mat.shape[0]):
-        for j in range(p_mat.shape[0]):
-            if i>=j:
-                total_density+= p_mat[i,j] * density_mat[n] * ba[i][-1] * ba[j][-1] 
-                n+=1
-
-
+def grid_int(p_mat, xyzw_list, density_list, c_list):
+    
+    total_density=np.einsum("ik,jk,ij,i,j->k",density_list,density_list,p_mat,c_list,c_list )
     ks_mat = np.zeros(p_mat.shape)
+    total_density_13 = np.cbrt(total_density)
 
-    total_density_13 = total_density**(1./3.)
-
-    n=0
-    for i in range(p_mat.shape[0]):
-        for j in range(p_mat.shape[0]):
-            if i>j:
-                ks_mat[i,j] = np.sum(density_mat[n]/2 * total_density_13 * xyzw_list[:,3])
-                ks_mat[j,i] = ks_mat[i,j]
-                n+=1
-            if i==j:
-                ks_mat[i,j] = np.sum(density_mat[n]   * total_density_13 * xyzw_list[:,3])
-                n+=1
+    ks_mat = np.einsum("ik,jk,k,k->ij",density_list,density_list,total_density_13, xyzw_list[:,3])
                 
     ks_mat = ks_mat * np.pi * 4
 

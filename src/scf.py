@@ -137,7 +137,11 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
 
     if dft==1:
         xyzw_list   = xyzw_list=np.vstack(xyzw_list_gen(atom_xyz))
-        density_mat = np.array(get_density_list(ba,s_mat_dia,xyzw_list))
+        if contracted==1:
+            c_list = np.array([i[-1] for i in ba])
+        else:
+            c_list = np.ones(basis_num)
+        density_list = np.array(get_density_list(ba,s_mat_dia,xyzw_list))
 
     # begain scf calculation 
     while(delta_e>1*10**-8 or delta_p>1*10**-6):
@@ -172,14 +176,14 @@ def scf(ba,nu,contract_list,dft=0,mp2=0,contracted=1):
                         if i>=j:
                             p_mat_uncon[contract_cum1[i]:contract_cum1[i+1],contract_cum1[j]:contract_cum1[j+1],]=p_mat[i,j]
                             p_mat_uncon[contract_cum1[j]:contract_cum1[j+1],contract_cum1[i]:contract_cum1[i+1],]=p_mat[j,i]
-
+    
             # when primitive basis used 
             else:
                 p_mat_uncon=p_mat
 
             #  calculaiton of XC functional potential(Xalpha functional)
             #  page 562 in book of "quantum chemistry" 7th edition by levine 
-            ks_mat, total_density = grid_int(p_mat_uncon, xyzw_list, density_mat, ba) 
+            ks_mat, total_density = grid_int(p_mat_uncon, xyzw_list, density_list, c_list) 
             ks_mat=ks_mat*-(3.0/2)*(3.0/np.pi)**(1.0/3) * (2./3)      
         
         # do HF calculation
